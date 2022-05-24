@@ -1,0 +1,11 @@
+tasks:
+  - name: Temporalite
+    init: go install github.com/DataDog/temporalite/cmd/temporalite@latest
+    command: temporalite start --namespace default --ephemeral
+
+ports:
+  - port: 7233 # temporal server
+    onOpen: ignore
+  - port: 8233 # temporal web
+    onOpen: open-preview
+    
