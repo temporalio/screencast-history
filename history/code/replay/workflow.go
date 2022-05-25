@@ -7,27 +7,22 @@ import (
 	"math/rand"
 	"time"
 
+	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
 
 func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
-	if workflow.IsReplaying(ctx) {
-		log.Println(" * REPLAY: Workflow code executing")
-	} else {
-		log.Println(" * Workflow code executing")
-	}
+	logger := workflow.GetLogger(ctx)
+
+	logger.Info(" * Workflow executing", "replay", workflow.IsReplaying(ctx))
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	if workflow.IsReplaying(ctx) {
-		log.Println(" * REPLAY: Execute first activity")
-	} else {
-		log.Println(" * Execute first activity")
-	}
+	logger.Info(" * Execute first activity", "Replay", workflow.IsReplaying(ctx))
 
 	var result string
 	err := workflow.ExecuteActivity(ctx, "ReplayActivity", name+" first activity").Get(ctx, &result)
@@ -36,11 +31,7 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 		return "", err
 	}
 
-	if workflow.IsReplaying(ctx) {
-		log.Println(" * REPLAY: Execute second activity")
-	} else {
-		log.Println(" * Execute second activity")
-	}
+	logger.Info(" * Execute second activity", "Replay", workflow.IsReplaying(ctx))
 
 	err = workflow.ExecuteActivity(ctx, "ReplayActivity", name+" second activity").Get(ctx, &result)
 	if err != nil {
@@ -48,7 +39,7 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 		return "", err
 	}
 
-	log.Println(" * Workflow completed", "result", result)
+	logger.Info(" * Workflow completed", "Replay", workflow.IsReplaying(ctx))
 
 	return result, nil
 }
@@ -58,6 +49,10 @@ type Activities struct {
 }
 
 func (a *Activities) ReplayActivity(ctx context.Context, name string) (string, error) {
+	logger := activity.GetLogger(ctx)
+
+	logger.Info(" * Activity executing")
+
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()
 		return "", fmt.Errorf("Simulating a deploy")

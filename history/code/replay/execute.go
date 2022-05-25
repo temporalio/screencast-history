@@ -22,7 +22,9 @@ func main() {
 			}
 			defer c.Close()
 
-			w := worker.New(c, "default", worker.Options{})
+			w := worker.New(c, "default", worker.Options{
+				EnableLoggingInReplay: true,
+			})
 
 			w.RegisterWorkflow(ReplayWorkflow)
 			a := Activities{Worker: w}
