@@ -4,12 +4,29 @@ import (
 	"context"
 	"log"
 
+	"github.com/temporalio/screencasts/history/zapadapter"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.uber.org/zap/zapcore"
 )
 
+var skipLogKeys = []string{
+	"Namespace",
+	"TaskQueue",
+	"WorkerID",
+}
+
 func main() {
-	c, err := client.NewClient(client.Options{})
+	logger, err := zapadapter.NewZapLogger(zapcore.InfoLevel, skipLogKeys)
+	if err != nil {
+		log.Fatalln("Unable to create logger", err)
+	}
+
+	c, err := client.NewClient(
+		client.Options{
+			Logger: logger,
+		},
+	)
 	if err != nil {
 		log.Fatalln("Unable to create client", err)
 	}

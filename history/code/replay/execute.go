@@ -8,7 +8,6 @@ import (
 	"github.com/temporalio/screencasts/history/zapadapter"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -21,27 +20,17 @@ var skipLogKeys = []string{
 }
 
 func main() {
-	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05")
-	config := zap.Config{
-		Level:             zap.NewAtomicLevelAt(zap.DebugLevel),
-		Development:       false,
-		DisableCaller:     true,
-		DisableStacktrace: true,
-		Sampling:          nil,
-		Encoding:          "console",
-		EncoderConfig:     encoderConfig,
-		OutputPaths:       []string{"stdout"},
-		ErrorOutputPaths:  []string{"stderr"},
+	logger, err := zapadapter.NewZapLogger(zapcore.DebugLevel, skipLogKeys)
+	if err != nil {
+		log.Fatalln("Unable to create logger", err)
 	}
-	logger, err := config.Build()
 
 	go func() {
 		for i := 0; ; i += 1 {
 			c, err := client.NewClient(
 				client.Options{
 					Identity: fmt.Sprintf("worker %d", i),
-					Logger:   zapadapter.NewZapAdapter(logger, skipLogKeys),
+					Logger:   logger,
 				},
 			)
 			if err != nil {
@@ -64,7 +53,7 @@ func main() {
 	}()
 
 	c, err := client.NewClient(client.Options{
-		Logger: zapadapter.NewZapAdapter(logger, skipLogKeys),
+		Logger: logger,
 	})
 	if err != nil {
 		log.Fatalln("Unable to create client", err)

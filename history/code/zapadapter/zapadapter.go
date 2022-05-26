@@ -29,11 +29,35 @@ import (
 
 	"go.temporal.io/sdk/log"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type ZapAdapter struct {
 	zl       *zap.Logger
 	skipKeys map[string]bool
+}
+
+func NewZapLogger(level zapcore.Level, skipLogKeys []string) (log.Logger, error) {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05")
+	config := zap.Config{
+		Level:             zap.NewAtomicLevelAt(level),
+		Development:       false,
+		DisableCaller:     true,
+		DisableStacktrace: true,
+		Sampling:          nil,
+		Encoding:          "console",
+		EncoderConfig:     encoderConfig,
+		OutputPaths:       []string{"stdout"},
+		ErrorOutputPaths:  []string{"stderr"},
+	}
+
+	logger, err := config.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewZapAdapter(logger, skipLogKeys), nil
 }
 
 func NewZapAdapter(zapLogger *zap.Logger, skipKeys []string) *ZapAdapter {
