@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -15,27 +14,25 @@ import (
 func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow executing", "replay", workflow.IsReplaying(ctx))
+	logger.Info(" * Workflow function running", "Replay", workflow.IsReplaying(ctx))
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	logger.Info(" * Execute first activity", "Replay", workflow.IsReplaying(ctx))
+	logger.Info(" * ExecuteActivity for first activity", "Replay", workflow.IsReplaying(ctx))
 
 	var result string
 	err := workflow.ExecuteActivity(ctx, "ReplayActivity", name+" first activity").Get(ctx, &result)
 	if err != nil {
-		log.Println("Activity failed.", "Error", err)
 		return "", err
 	}
 
-	logger.Info(" * Execute second activity", "Replay", workflow.IsReplaying(ctx))
+	logger.Info(" * ExecuteActivity for second activity", "Replay", workflow.IsReplaying(ctx))
 
 	err = workflow.ExecuteActivity(ctx, "ReplayActivity", name+" second activity").Get(ctx, &result)
 	if err != nil {
-		log.Println("Activity failed.", "Error", err)
 		return "", err
 	}
 
@@ -51,7 +48,7 @@ type Activities struct {
 func (a *Activities) ReplayActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info(" * Activity executing")
+	logger.Info(" * Activity function running")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()
