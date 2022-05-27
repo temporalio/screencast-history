@@ -18,6 +18,7 @@ var skipLogKeys = []string{
 	"WorkflowType",
 	"WorkflowID",
 	"RunID",
+	"ActivityType",
 }
 
 func runWorker(identity string, logger sdklog.Logger) {
