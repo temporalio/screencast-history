@@ -21,11 +21,15 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
+	logger.Info("* Requesting ExecuteActivity for the first activity", "Replay", workflow.IsReplaying(ctx))
+
 	var result string
 	err := workflow.ExecuteActivity(ctx, "ReplayActivity", name+" first activity").Get(ctx, &result)
 	if err != nil {
 		return "", err
 	}
+
+	logger.Info("* Requesting ExecuteActivity for the second activity", "Replay", workflow.IsReplaying(ctx))
 
 	err = workflow.ExecuteActivity(ctx, "ReplayActivity", name+" second activity").Get(ctx, &result)
 	if err != nil {
