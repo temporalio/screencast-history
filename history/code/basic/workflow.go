@@ -11,7 +11,7 @@ import (
 func BasicWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow executing")
+	logger.Info("* Workflow executing")
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
@@ -31,7 +31,7 @@ func BasicWorkflow(ctx workflow.Context, name string) (string, error) {
 func BasicActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info(" * Activity executing")
+	logger.Info("* Activity executing")
 
 	return "Hello from " + name + "!", nil
 }

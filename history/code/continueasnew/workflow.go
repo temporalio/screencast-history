@@ -18,7 +18,7 @@ func doSomeWork(ctx workflow.Context) {
 func ContinueAsNewWorkflow(ctx workflow.Context, name string, cursor int) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow executing", "cursor", cursor)
+	logger.Info("* Workflow executing", "cursor", cursor)
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,

@@ -41,7 +41,7 @@ func runWorker(identity string, logger sdklog.Logger) {
 }
 
 func main() {
-	logger, err := zapadapter.NewZapLogger(zapcore.InfoLevel, skipLogKeys)
+	logger, err := zapadapter.NewZapLogger(zapcore.DebugLevel, skipLogKeys)
 	if err != nil {
 		log.Fatalln("Unable to create logger", err)
 	}
@@ -75,4 +75,6 @@ func main() {
 	if err != nil {
 		log.Fatalln("Workflow failed", err)
 	}
+
+	logger.Info("Workflow completed", "result", result)
 }

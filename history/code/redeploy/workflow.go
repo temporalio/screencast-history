@@ -14,7 +14,7 @@ import (
 func RedeployWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow executing")
+	logger.Info("* Workflow executing")
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
@@ -38,7 +38,7 @@ type Activities struct {
 func (a *Activities) RedeployActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info(" * Activity executing")
+	logger.Info("* Activity executing")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()

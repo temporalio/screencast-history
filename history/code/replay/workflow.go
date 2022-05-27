@@ -14,7 +14,7 @@ import (
 func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow executing", "Replay", workflow.IsReplaying(ctx))
+	logger.Info("* Workflow executing", "Replay", workflow.IsReplaying(ctx))
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
@@ -42,7 +42,7 @@ type Activities struct {
 func (a *Activities) ReplayActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info(" * Activity executing")
+	logger.Info("* Activity executing")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()

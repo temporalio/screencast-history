@@ -70,4 +70,6 @@ func main() {
 	if err != nil {
 		log.Fatalln("Workflow failed", err)
 	}
+
+	logger.Info("Workflow completed", "result", result)
 }
