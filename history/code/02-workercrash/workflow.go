@@ -11,7 +11,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func RedeployWorkflow(ctx workflow.Context, name string) (string, error) {
+func WorkerCrashWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("* Workflow executing")
@@ -22,7 +22,7 @@ func RedeployWorkflow(ctx workflow.Context, name string) (string, error) {
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var result string
-	err := workflow.ExecuteActivity(ctx, "RedeployActivity", name).Get(ctx, &result)
+	err := workflow.ExecuteActivity(ctx, "WorkerCrashActivity", name).Get(ctx, &result)
 	if err != nil {
 		logger.Error("Activity failed.", "Error", err)
 		return "", err
@@ -35,14 +35,14 @@ type Activities struct {
 	Worker worker.Worker
 }
 
-func (a *Activities) RedeployActivity(ctx context.Context, name string) (string, error) {
+func (a *Activities) WorkerCrashActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
 	logger.Info("* Activity executing")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()
-		return "", fmt.Errorf("Simulating a deploy")
+		return "", fmt.Errorf("Simulating a worker crash")
 	}
 
 	return "Hello from " + name + "!", nil

@@ -33,7 +33,7 @@ func runWorker(identity string, logger sdklog.Logger) {
 
 	w := worker.New(c, "default", worker.Options{})
 
-	w.RegisterWorkflow(RedeployWorkflow)
+	w.RegisterWorkflow(WorkerCrashWorkflow)
 	a := Activities{Worker: w}
 	w.RegisterActivity(&a)
 
@@ -50,8 +50,8 @@ func main() {
 	worker.SetStickyWorkflowCacheSize(0)
 
 	go func() {
-		for i := 0; ; i += 1 {
-			runWorker(fmt.Sprintf("worker %d", i), logger)
+		for i := 1; ; i += 1 {
+			runWorker(fmt.Sprintf("Worker %d", i), logger)
 		}
 	}()
 
@@ -66,8 +66,8 @@ func main() {
 		client.StartWorkflowOptions{
 			TaskQueue: "default",
 		},
-		RedeployWorkflow,
-		"redeploy workflow",
+		WorkerCrashWorkflow,
+		"worker crash workflow",
 	)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
