@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/temporalio/screencasts/history/zapadapter"
@@ -32,8 +33,9 @@ func runWorker(identity string, logger sdklog.Logger) {
 
 	w := worker.New(c, "default", worker.Options{})
 
-	w.RegisterWorkflow(BasicWorkflow)
-	w.RegisterActivity(BasicActivity)
+	w.RegisterWorkflow(RedeployWorkflow)
+	a := Activities{Worker: w}
+	w.RegisterActivity(&a)
 
 	w.Run(nil)
 }
@@ -44,8 +46,13 @@ func main() {
 		log.Fatalln("Unable to create logger", err)
 	}
 
+	// Disable sticky cache for the demo.
+	worker.SetStickyWorkflowCacheSize(0)
+
 	go func() {
-		runWorker("worker", logger)
+		for i := 0; ; i += 1 {
+			runWorker(fmt.Sprintf("worker %d", i), logger)
+		}
 	}()
 
 	c, err := client.NewClient(client.Options{Logger: logger})
@@ -59,8 +66,8 @@ func main() {
 		client.StartWorkflowOptions{
 			TaskQueue: "default",
 		},
-		BasicWorkflow,
-		"basic workflow",
+		RedeployWorkflow,
+		"redeploy workflow",
 	)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)

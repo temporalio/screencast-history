@@ -49,6 +49,9 @@ func main() {
 		log.Fatalln("Unable to create logger", err)
 	}
 
+	// Disable sticky cache for the demo.
+	worker.SetStickyWorkflowCacheSize(0)
+
 	go func() {
 		for i := 0; ; i += 1 {
 			runWorker(fmt.Sprintf("worker %d", i), logger)

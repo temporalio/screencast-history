@@ -8,7 +8,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func BasicWorkflow(ctx workflow.Context, name string) (string, error) {
+func SimpleWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("* Workflow executing")
@@ -19,7 +19,7 @@ func BasicWorkflow(ctx workflow.Context, name string) (string, error) {
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var result string
-	err := workflow.ExecuteActivity(ctx, BasicActivity, name).Get(ctx, &result)
+	err := workflow.ExecuteActivity(ctx, SimpleActivity, name).Get(ctx, &result)
 	if err != nil {
 		logger.Error("Activity failed.", "Error", err)
 		return "", err
@@ -28,7 +28,7 @@ func BasicWorkflow(ctx workflow.Context, name string) (string, error) {
 	return result, nil
 }
 
-func BasicActivity(ctx context.Context, name string) (string, error) {
+func SimpleActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
 	logger.Info("* Activity executing")

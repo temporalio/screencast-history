@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/temporalio/screencasts/history/zapadapter"
@@ -33,9 +32,8 @@ func runWorker(identity string, logger sdklog.Logger) {
 
 	w := worker.New(c, "default", worker.Options{})
 
-	w.RegisterWorkflow(RedeployWorkflow)
-	a := Activities{Worker: w}
-	w.RegisterActivity(&a)
+	w.RegisterWorkflow(SimpleWorkflow)
+	w.RegisterActivity(SimpleActivity)
 
 	w.Run(nil)
 }
@@ -47,9 +45,7 @@ func main() {
 	}
 
 	go func() {
-		for i := 0; ; i += 1 {
-			runWorker(fmt.Sprintf("worker %d", i), logger)
-		}
+		runWorker("worker", logger)
 	}()
 
 	c, err := client.NewClient(client.Options{Logger: logger})
@@ -63,8 +59,8 @@ func main() {
 		client.StartWorkflowOptions{
 			TaskQueue: "default",
 		},
-		RedeployWorkflow,
-		"redeploy workflow",
+		SimpleWorkflow,
+		"simple workflow",
 	)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
