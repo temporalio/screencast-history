@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.temporal.io/sdk/activity"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
@@ -16,10 +17,12 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 
 	logger.Info("* Workflow executing", "Replay", workflow.IsReplaying(ctx))
 
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: 10 * time.Second,
-	}
-	ctx = workflow.WithActivityOptions(ctx, ao)
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 1 * time.Second,
+	})
+	ctx = workflow.WithRetryPolicy(ctx, temporal.RetryPolicy{
+		MaximumInterval: 1 * time.Second,
+	})
 
 	logger.Info("* Requesting ExecuteActivity for the first activity", "Replay", workflow.IsReplaying(ctx))
 
