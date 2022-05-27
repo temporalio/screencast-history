@@ -10,5 +10,5 @@ ports:
   - port: 7233 # temporal server
     onOpen: ignore
   - port: 8233 # temporal web
-    onOpen: open-preview
+    onOpen: open-browser
     
