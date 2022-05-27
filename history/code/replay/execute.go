@@ -80,6 +80,4 @@ func main() {
 	if err != nil {
 		log.Fatalln("Workflow failed", err)
 	}
-
-	logger.Info("Workflow complete", "Result", result)
 }
