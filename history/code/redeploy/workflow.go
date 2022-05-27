@@ -14,7 +14,7 @@ import (
 func RedeployWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info("Workflow execution", "name", name)
+	logger.Info(" * Workflow executing")
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
@@ -28,8 +28,6 @@ func RedeployWorkflow(ctx workflow.Context, name string) (string, error) {
 		return "", err
 	}
 
-	logger.Info("Workflow completed", "result", result)
-
 	return result, nil
 }
 
@@ -40,7 +38,7 @@ type Activities struct {
 func (a *Activities) RedeployActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info("Activity execution", "name", name)
+	logger.Info(" * Activity executing")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()

@@ -14,14 +14,12 @@ import (
 func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info(" * Workflow function running", "Replay", workflow.IsReplaying(ctx))
+	logger.Info(" * Workflow executing", "Replay", workflow.IsReplaying(ctx))
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
-
-	logger.Info(" * ExecuteActivity for first activity", "Replay", workflow.IsReplaying(ctx))
 
 	var result string
 	err := workflow.ExecuteActivity(ctx, "ReplayActivity", name+" first activity").Get(ctx, &result)
@@ -29,14 +27,10 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 		return "", err
 	}
 
-	logger.Info(" * ExecuteActivity for second activity", "Replay", workflow.IsReplaying(ctx))
-
 	err = workflow.ExecuteActivity(ctx, "ReplayActivity", name+" second activity").Get(ctx, &result)
 	if err != nil {
 		return "", err
 	}
-
-	logger.Info(" * Workflow completed", "Replay", workflow.IsReplaying(ctx))
 
 	return result, nil
 }
@@ -48,7 +42,7 @@ type Activities struct {
 func (a *Activities) ReplayActivity(ctx context.Context, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 
-	logger.Info(" * Activity function running")
+	logger.Info(" * Activity executing")
 
 	if rand.Intn(2) == 1 {
 		a.Worker.Stop()

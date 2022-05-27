@@ -18,7 +18,7 @@ func doSomeWork(ctx workflow.Context) {
 func OverflowWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info("Workflow execution", "name", name)
+	logger.Info(" * Workflow executing")
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
