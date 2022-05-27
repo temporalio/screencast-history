@@ -6,6 +6,7 @@ import (
 
 	"github.com/temporalio/screencasts/history/zapadapter"
 	"go.temporal.io/sdk/client"
+	sdklog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap/zapcore"
 )
@@ -13,18 +14,13 @@ import (
 var skipLogKeys = []string{
 	"Namespace",
 	"TaskQueue",
-	"WorkerID",
 }
 
-func main() {
-	logger, err := zapadapter.NewZapLogger(zapcore.InfoLevel, skipLogKeys)
-	if err != nil {
-		log.Fatalln("Unable to create logger", err)
-	}
-
+func runWorker(identity string, logger sdklog.Logger) {
 	c, err := client.NewClient(
 		client.Options{
-			Logger: logger,
+			Logger:   logger,
+			Identity: identity,
 		},
 	)
 	if err != nil {
@@ -36,10 +32,28 @@ func main() {
 
 	w.RegisterWorkflow(ContinueAsNewWorkflow)
 
-	err = w.Start()
+	w.Run(nil)
+}
+
+func main() {
+	logger, err := zapadapter.NewZapLogger(zapcore.InfoLevel, skipLogKeys)
 	if err != nil {
-		log.Fatalln("Unable to start worker", err)
+		log.Fatalln("Unable to create logger", err)
 	}
+
+	go func() {
+		runWorker("worker", logger)
+	}()
+
+	c, err := client.NewClient(
+		client.Options{
+			Logger: logger,
+		},
+	)
+	if err != nil {
+		log.Fatalln("Unable to create client", err)
+	}
+	defer c.Close()
 
 	wf, err := c.ExecuteWorkflow(
 		context.Background(),
@@ -60,5 +74,5 @@ func main() {
 		log.Fatalln("Workflow failed", err)
 	}
 
-	log.Println("Workflow result:", result)
+	logger.Info("Workflow complete", "Result", result)
 }

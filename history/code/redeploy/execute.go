@@ -5,37 +5,54 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/temporalio/screencasts/history/zapadapter"
 	"go.temporal.io/sdk/client"
+	sdklog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/worker"
+	"go.uber.org/zap/zapcore"
 )
 
+var skipLogKeys = []string{
+	"Namespace",
+	"TaskQueue",
+	"WorkflowType",
+	"RunID",
+}
+
+func runWorker(identity string, logger sdklog.Logger) {
+	c, err := client.NewClient(
+		client.Options{
+			Logger:   logger,
+			Identity: identity,
+		},
+	)
+	if err != nil {
+		log.Fatalln("Unable to create client", err)
+	}
+	defer c.Close()
+
+	w := worker.New(c, "default", worker.Options{})
+
+	w.RegisterWorkflow(RedeployWorkflow)
+	a := Activities{Worker: w}
+	w.RegisterActivity(&a)
+
+	w.Run(nil)
+}
+
 func main() {
+	logger, err := zapadapter.NewZapLogger(zapcore.InfoLevel, skipLogKeys)
+	if err != nil {
+		log.Fatalln("Unable to create logger", err)
+	}
+
 	go func() {
 		for i := 0; ; i += 1 {
-			c, err := client.NewClient(
-				client.Options{
-					Identity: fmt.Sprintf("worker %d", i),
-				},
-			)
-			if err != nil {
-				log.Fatalln("Unable to create client", err)
-			}
-			defer c.Close()
-
-			w := worker.New(c, "default", worker.Options{})
-
-			w.RegisterWorkflow(RedeployWorkflow)
-			a := Activities{Worker: w}
-			w.RegisterActivity(&a)
-
-			err = w.Run(nil)
-			if err != nil {
-				log.Fatalln("Unable to start worker", err)
-			}
+			runWorker(fmt.Sprintf("worker %d", i), logger)
 		}
 	}()
 
-	c, err := client.NewClient(client.Options{})
+	c, err := client.NewClient(client.Options{Logger: logger})
 	if err != nil {
 		log.Fatalln("Unable to create client", err)
 	}
@@ -59,5 +76,5 @@ func main() {
 		log.Fatalln("Workflow failed", err)
 	}
 
-	log.Println("Workflow result:", result)
+	logger.Info("Workflow complete", "Result", result)
 }
