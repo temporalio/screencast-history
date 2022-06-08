@@ -7,6 +7,7 @@ import (
 
 	"github.com/temporalio/screencasts/history/zapadapter"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/interceptor"
 	sdklog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap/zapcore"
@@ -18,7 +19,6 @@ var skipLogKeys = []string{
 	"WorkflowType",
 	"WorkflowID",
 	"RunID",
-	"ActivityType",
 }
 
 func runWorker(identity string, logger sdklog.Logger) {
@@ -34,7 +34,7 @@ func runWorker(identity string, logger sdklog.Logger) {
 	defer c.Close()
 
 	w := worker.New(c, "default", worker.Options{
-		EnableLoggingInReplay: true,
+		Interceptors: []interceptor.WorkerInterceptor{NewWorkerInterceptor(InterceptorOptions{})},
 	})
 
 	w.RegisterWorkflow(ReplayWorkflow)
@@ -54,7 +54,7 @@ func main() {
 	worker.SetStickyWorkflowCacheSize(0)
 
 	go func() {
-		for i := 0; ; i += 1 {
+		for i := 1; ; i += 1 {
 			runWorker(fmt.Sprintf("worker %d", i), logger)
 		}
 	}()

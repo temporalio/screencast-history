@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"go.temporal.io/sdk/activity"
@@ -13,10 +12,6 @@ import (
 )
 
 func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
-	logger := workflow.GetLogger(ctx)
-
-	logger.Info("* Workflow executing", "Replay", workflow.IsReplaying(ctx))
-
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: 1 * time.Second,
 	})
@@ -24,17 +19,13 @@ func ReplayWorkflow(ctx workflow.Context, name string) (string, error) {
 		MaximumInterval: 1 * time.Second,
 	})
 
-	logger.Info("* Requesting ExecuteActivity for the first activity", "Replay", workflow.IsReplaying(ctx))
-
 	var result string
-	err := workflow.ExecuteActivity(ctx, "ReplayActivity", name+" first activity").Get(ctx, &result)
+	err := workflow.ExecuteActivity(ctx, "FirstActivity", name+" first activity").Get(ctx, &result)
 	if err != nil {
 		return "", err
 	}
 
-	logger.Info("* Requesting ExecuteActivity for the second activity", "Replay", workflow.IsReplaying(ctx))
-
-	err = workflow.ExecuteActivity(ctx, "ReplayActivity", name+" second activity").Get(ctx, &result)
+	err = workflow.ExecuteActivity(ctx, "SecondActivity", name+" second activity").Get(ctx, &result)
 	if err != nil {
 		return "", err
 	}
@@ -46,15 +37,15 @@ type Activities struct {
 	Worker worker.Worker
 }
 
-func (a *Activities) ReplayActivity(ctx context.Context, name string) (string, error) {
-	logger := activity.GetLogger(ctx)
-
-	logger.Info("* Activity executing")
-
-	if rand.Intn(2) == 1 {
+func (a *Activities) FirstActivity(ctx context.Context, name string) (string, error) {
+	if activity.GetInfo(ctx).Attempt == 1 {
 		a.Worker.Stop()
-		return "", fmt.Errorf("Simulating a deploy")
+		return "", fmt.Errorf("faking a worker crash")
 	}
 
+	return "Hello from " + name + "!", nil
+}
+
+func (a *Activities) SecondActivity(ctx context.Context, name string) (string, error) {
 	return "Hello from " + name + "!", nil
 }
