@@ -2,9 +2,6 @@ tasks:
   - name: Temporalite
     init: go install github.com/DataDog/temporalite/cmd/temporalite@latest
     command: temporalite start --namespace default --ephemeral
-  - name: Demos
-    init: cd history/code && go mod download
-    command: "true"
 
 ports:
   - port: 7233 # temporal server
