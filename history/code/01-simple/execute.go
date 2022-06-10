@@ -21,6 +21,7 @@ var skipLogKeys = []string{
 func runWorker(identity string, logger sdklog.Logger) {
 	c, err := client.NewClient(
 		client.Options{
+			HostPort: "127.0.0.1:7234",
 			Logger:   logger,
 			Identity: identity,
 		},
@@ -44,11 +45,14 @@ func main() {
 		log.Fatalln("Unable to create logger", err)
 	}
 
+	// Disable sticky cache for the demo.
+	worker.SetStickyWorkflowCacheSize(0)
+
 	go func() {
 		runWorker("worker", logger)
 	}()
 
-	c, err := client.NewClient(client.Options{Logger: logger})
+	c, err := client.NewClient(client.Options{HostPort: "127.0.0.1:7234", Logger: logger})
 	if err != nil {
 		log.Fatalln("Unable to create client", err)
 	}
